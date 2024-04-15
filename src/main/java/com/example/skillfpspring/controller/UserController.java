@@ -1,8 +1,8 @@
-package com.example.skill_fp_spring.controller;
+package com.example.skillfpspring.controller;
 
-import com.example.skill_fp_spring.entity.Operation;
-import com.example.skill_fp_spring.entity.User;
-import com.example.skill_fp_spring.interfaces.UserRepository;
+import com.example.skillfpspring.entity.Operation;
+import com.example.skillfpspring.entity.User;
+import com.example.skillfpspring.interfaces.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package com.example.skill_fp_spring.entity;
+package com.example.skillfpspring.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;

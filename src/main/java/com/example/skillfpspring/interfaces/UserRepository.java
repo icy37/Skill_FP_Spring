@@ -1,6 +1,6 @@
-package com.example.skill_fp_spring.interfaces;
+package com.example.skillfpspring.interfaces;
 
-import com.example.skill_fp_spring.entity.User;
+import com.example.skillfpspring.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

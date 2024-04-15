@@ -1,4 +1,4 @@
-package com.example.skill_fp_spring.entity;
+package com.example.skillfpspring.entity;
 
 import lombok.Data;
 import jakarta.persistence.*;

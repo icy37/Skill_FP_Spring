@@ -1,4 +1,4 @@
-package com.example.skill_fp_spring;
+package com.example.skillfpspring;
 
 
 import org.springframework.boot.SpringApplication;
