@@ -1,0 +1,29 @@
+PUT localhost:8080/api/users/1/putMoney?amount=10.0
+PUT localhost:8080/api/users/1/takeMoney?amount=5.0
+GET localhost:8080/api/users/1/balance
+GET localhost:8080/api/users/1/operations?startDate=2023-11-28&endDate=2024-04-14
+
+SQL
+-- Создание базы данных skill_fp
+CREATE DATABASE skill_fp;
+
+-- Подключение к базе данных skill_fp
+\c skill_fp;
+
+-- Создание таблицы users
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    balance DECIMAL(10, 2)
+);
+
+-- Создание пользователя
+INSERT INTO public.users (balance, history) VALUES (0.00, '[]');
+
+-- Создание таблицы operations
+CREATE TABLE operations (
+    operation_id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    operation_type INTEGER NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    operation_date TIMESTAMP NOT NULL
+);
