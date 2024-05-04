@@ -1,10 +1,11 @@
 package com.example.skillfpspring.controller;
 
 import com.example.skillfpspring.entity.Operation;
+import com.example.skillfpspring.entity.Transaction;
 import com.example.skillfpspring.entity.User;
+import com.example.skillfpspring.interfaces.TransactionRepository;
 import com.example.skillfpspring.interfaces.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -21,11 +22,14 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private final UserRepository userRepository;
+    private final TransactionRepository transactionRepository;
 
     @Autowired
-    public UserController(UserRepository userRepository) {
+    public UserController(UserRepository userRepository, TransactionRepository transactionRepository) {
         this.userRepository = userRepository;
+        this.transactionRepository = transactionRepository;
     }
+
 
     @GetMapping("/{id}/balance")
     public ResponseEntity<BalanceResponse> getBalance(@PathVariable int id) {
@@ -41,7 +45,7 @@ public class UserController {
     @Transactional
     @PutMapping("/{id}/putMoney")
     public ResponseEntity<OperationResponse> putMoney(@PathVariable int id, @RequestParam double amount) {
-        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
         user.setBalance(user.getBalance() + amount);
         Operation operation = new Operation(user, Operation.OperationType.DEPOSIT, amount);
         operation.setDescription("Пополнение счета");
@@ -53,7 +57,7 @@ public class UserController {
     @Transactional
     @PutMapping("/{id}/takeMoney")
     public ResponseEntity<OperationResponse> takeMoney(@PathVariable int id, @RequestParam double amount) {
-        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
         if (user.getBalance() < amount) {
             return ResponseEntity.badRequest().body(new OperationResponse(0, "Недостаточно средств"));
         }
@@ -65,13 +69,53 @@ public class UserController {
         return ResponseEntity.ok(new OperationResponse(1, "Успех"));
     }
 
+    @Transactional
+    @PutMapping("/{senderId}/transfer")
+    public ResponseEntity<OperationResponse> transferMoney(@PathVariable int senderId,
+                                                           @RequestParam int recipientId,
+                                                           @RequestParam double amount) {
+
+        User sender = userRepository.findById(senderId).orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
+        User recipient = userRepository.findById(recipientId).orElseThrow(() -> new EntityNotFoundException("Получатель не найден"));
+
+        if (sender.getBalance() < amount) {
+            return ResponseEntity.badRequest().body(new OperationResponse(0, "Недостаточно средств"));
+        }
+
+        sender.setBalance(sender.getBalance() - amount);
+        recipient.setBalance(recipient.getBalance() + amount);
+
+        // Сохранение транзакции
+        Transaction transaction = new Transaction();
+        transaction.setSender(sender);
+        transaction.setRecipient(recipient);
+        transaction.setAmount(amount);
+        transaction.setTransactionDate(LocalDate.now());
+        transaction.setOperationType(Operation.OperationType.TRANSFER.ordinal());
+        transaction.setStatus("COMPLETED");
+        transactionRepository.save(transaction);
+
+        Operation senderOperation = new Operation(sender, Operation.OperationType.TRANSFER, amount);
+        senderOperation.setDescription("Перевод средств получателю " + recipient.getId());
+        sender.getOperations().add(senderOperation);
+
+        Operation recipientOperation = new Operation(recipient, Operation.OperationType.TRANSFER, amount);
+        recipientOperation.setDescription("Перевод средств от отправителя " + sender.getId());
+        recipient.getOperations().add(recipientOperation);
+
+        userRepository.save(sender);
+        userRepository.save(recipient);
+
+        return ResponseEntity.ok(new OperationResponse(1, "Перевод совершен"));
+    }
+
     @GetMapping("/{id}/operations")
     public ResponseEntity<Object> getOperationList(
             @PathVariable int id,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         try {
-            User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
+            User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
             List<Operation> operations = user.getOperations().stream()
                     .filter(op -> (startDate == null || op.getOperationDate().isAfter(startDate.atStartOfDay())) &&
                             (endDate == null || op.getOperationDate().isBefore(endDate.plusDays(1).atStartOfDay())))
@@ -79,40 +123,8 @@ public class UserController {
             return ResponseEntity.ok(operations);
         } catch (EntityNotFoundException e) {
             Operation errorOperation = new Operation();
-            errorOperation.setDescription("User not found");
+            errorOperation.setDescription("Пользователь не найден");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorOperation);
         }
-    }
-
-    @Data
-    private static class BalanceResponse {
-        private double value;
-        private String message;
-
-        public BalanceResponse(double value) {
-            this.value = value;
-        }
-
-        public BalanceResponse(double value, String message) {
-            this.value = value;
-            this.message = message;
-        }
-
-    }
-
-    @Data
-    private static class OperationResponse {
-        private int code;
-        private String message;
-
-        public OperationResponse(int code) {
-            this.code = code;
-        }
-
-        public OperationResponse(int code, String message) {
-            this.code = code;
-            this.message = message;
-        }
-
     }
 }

@@ -38,6 +38,16 @@ public class Operation {
     }
 
     public enum OperationType {
-        DEPOSIT, WITHDRAWAL
+        DEPOSIT(0), WITHDRAWAL(1), TRANSFER(2);
+
+        private final int value;
+
+        OperationType(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return this.value;
+        }
     }
 }

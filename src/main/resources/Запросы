@@ -2,7 +2,7 @@ PUT localhost:8080/api/users/1/putMoney?amount=10.0
 PUT localhost:8080/api/users/1/takeMoney?amount=5.0
 GET localhost:8080/api/users/1/balance
 GET localhost:8080/api/users/1/operations?startDate=2023-11-28&endDate=2024-04-14
-
+PUT localhost:8080/api/users/1/transfer?recipientId=2&amount=50.00
 SQL
 -- Создание базы данных skill_fp
 CREATE DATABASE skill_fp;
@@ -17,7 +17,7 @@ CREATE TABLE users (
 );
 
 -- Создание пользователя
-INSERT INTO public.users (balance, history) VALUES (0.00, '[]');
+INSERT INTO public.users (balance) VALUES (0.00);
 
 -- Создание таблицы operations
 CREATE TABLE operations (

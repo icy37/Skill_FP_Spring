@@ -31,8 +31,14 @@
             <li>Эндпоинт с указанием диапазона дат: <code>GET localhost:8080/api/users/1/operations?startDate=2023-11-28&endDate=2024-04-14</code></li>
         </ul>
     </li>
+    <li>
+        <strong>Перевод денег между пользователями</strong>
+        <ul>
+            <li>Эндпоинт: <code>PUT localhost:8080/api/users/2/transfer?recipientId=1&amount=20.00</code></li>
+        </ul>
+    </li>
 </ol>
 
 <h2>Структура базы данных</h2>
 
-![image](https://github.com/icy37/Skill_FP_Spring/assets/4716456/5677f1d4-4044-46e0-ac7c-15276581ec8c)
+![image](https://github.com/icy37/Skill_FP_Spring/assets/4716456/990aebe5-a78f-4f53-aeae-18642f52fbf1)
